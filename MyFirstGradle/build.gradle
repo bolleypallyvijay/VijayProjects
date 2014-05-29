@@ -1,0 +1,106 @@
+apply plugin: "groovy"
+apply plugin: "idea"
+
+sourceCompatibility = 1.5
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+//// The drivers we want to use
+def drivers = ["firefox","chrome"]
+
+
+dependencies {
+    //Default Jars req for GEB-SELENIUM-FF-DRIVE
+    testCompile 'org.gebish:geb-core:0.9.2'
+    testCompile 'org.seleniumhq.selenium:selenium-support:2.41.0'
+    //TESTNG-jar
+    testCompile 'org.testng:testng:6.8.8'
+    //Geb+TestNG
+    testCompile 'org.gebish:geb-testng:0.9.2'
+//    testCompile 'org.uncommons:reportng:1.1.4'
+//    testCompile 'velocity:velocity-dep:1.4'
+
+    //Groovy Jar
+    testCompile 'org.codehaus.groovy:groovy-all:2.0.8'
+
+//    Browser
+    drivers.each{driver->
+        testCompile "org.seleniumhq.selenium:selenium-$driver-driver:2.41.0"
+      }
+    //testCompile "org.seleniumhq.selenium:selenium-chrome-driver:2.41.0"
+
+//    // If using Spock, need to depend on geb-spock
+//    testCompile "org.gebish:geb-spock:0.9.2"
+//    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+
+}
+
+
+
+
+
+//    task firefoxOne(type:Test){
+//
+//                reports{
+//                    html.destination = reporting.file("$name/tests")
+//                }
+//                systemProperty "geb.build.reportsDir", reporting.file("$name/geb")
+//                systemProperty "geb.env", "firefox"
+//            }
+//
+drivers.each { driver ->
+    task "${driver}Test"(type: Test) {
+        reports {
+            html.destination = reporting.file("$name/tests")
+        }
+        useTestNG()
+        //    dependsOn drivers.collect { tasks["${it}Test"] }
+        options.suites("src/test/resources/testng.xml")
+
+        systemProperty "geb.build.reportsDir", reporting.file("$name/geb")
+        systemProperty "geb.env", driver
+
+        // If you wanted to set the baseUrl in your build…
+        // systemProperty "geb.build.baseUrl", "http://myapp.com"
+    }
+}
+
+//test {
+//    useTestNG()
+//    options {
+//        listeners << 'org.uncommons.reportng.HTMLReporter'
+//        listeners << 'org.uncommons.reportng.JUnitXMLReporter'
+//    }
+//}
+
+//test {
+//    reports.html.enabled = false
+//}
+
+////To run all Test on gradle Test
+//test {
+//        dependsOn drivers.collect { tasks["${it}Test"] }
+//        enabled = true
+//    }
+
+//test {
+//    useTestNG() {
+//        //suites 'src/test/resources/testng.xml'
+//        suites new File(rootDir, 'src/test/resources/testng.xml')
+//    }
+//}
+
+//task testGroupOne(type: Test) {
+//    //include '**/*SuiteOne.*'
+//    include '**/*GoogleTests.*'
+//    reporting.baseDir = file("${reporting.baseDir}/GoogleTests")
+////    testResultsDir = file("${buildDir}/test-results/GoogleTests")
+//}
+
+//########WorkingGood#######
+test {
+      dependsOn drivers.collect { tasks["${it}Test"] }
+}
